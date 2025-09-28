@@ -2,22 +2,22 @@ apiVersion: apps/v1
 kind: Deployment
 
 metadata:
-  name: lineage
+  name: dashboard
   namespace: dspm
 
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: lineage
+      app: dashboard
   template:
     metadata:
       labels:
-        app: lineage
+        app: dashboard
     spec:
       containers:
-      - name: lineage
-        image: lineage:latest
+      - name: dashboard
+        image: dashboard:latest
         imagePullPolicy: Never
         ports:
         - containerPort: 8000
