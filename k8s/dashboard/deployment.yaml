@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
       - name: dashboard
-        image: dashboard:latest
-        imagePullPolicy: Never
+        image: comnyang/dashboard:latest
+        imagePullPolicy: Always
         ports:
-        - containerPort: 8000
+        - containerPort: 80
 

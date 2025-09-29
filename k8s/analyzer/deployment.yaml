@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
       - name: analyzer
-        image: analyzer:latest
-        imagePullPolicy: Never
+        image: comnyang/analyzer:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8000
 

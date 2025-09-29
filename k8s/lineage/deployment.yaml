@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
       - name: lineage
-        image: lineage:latest
-        imagePullPolicy: Never
+        image: comnyang/lineage:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8000
 

@@ -7,7 +7,8 @@ metadata:
   name: dspm-ingress 
   namespace: dspm
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
 
 spec:
   rules:
@@ -30,13 +31,13 @@ spec:
             port:
               number: 8000
       
-      - path: /dashboard 
-        pathType: Prefix 
+      - path: /dashboard(/|$)(.*)
+        pathType: ImplementationSpecific
         backend:
           service:
             name: dashboard
             port:
-              number: 8000
+              number: 80
       
       - path: /lineage
         pathType: Prefix 

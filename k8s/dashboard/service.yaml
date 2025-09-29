@@ -9,5 +9,5 @@ spec:
   selector:
     app: dashboard 
   ports:
-  - port: 8000
-    targetPort: 8000
+  - port: 80
+    targetPort: 80

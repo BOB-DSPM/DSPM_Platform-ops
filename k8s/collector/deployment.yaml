@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
       - name: collector
-        image: collector:latest
-        imagePullPolicy: Never
+        image: comnyang/collector:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8000
 
