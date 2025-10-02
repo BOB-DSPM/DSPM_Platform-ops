@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dspm-backend
+  namespace: dspm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dspm-backend
+  template:
+    metadata:
+      labels:
+        app: dspm-backend
+    spec:
+      containers:
+      - name: dspm-backend
+        image: comnyang/backend:latest
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        env:
+        - name: ANALYZER_URL
+          value: "http://analyzer:8080"
+        - name: ANALYZER_BASE_URL
+          value: "http://analyzer:8080"
+        - name: ENVIRONMENT
+          value: "production"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

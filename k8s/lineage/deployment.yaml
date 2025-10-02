@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: lineage
+  namespace: dspm
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lineage
+  template:
+    metadata:
+      labels:
+        app: lineage
+    spec:
+      containers:
+      - name: lineage
+        image: comnyang/lineage:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        env:
+        # Analyzer API 연결
+        - name: ANALYZER_API_URL
+          value: "http://analyzer:8080"
+        - name: ANALYZER_API_ENDPOINT
+          value: "http://analyzer:8080/api"
+        # 데이터 lineage 설정
+        - name: LINEAGE_SOURCE
+          value: "dspm-analyzer"
+        - name: REFRESH_INTERVAL
+          value: "60"  # 60초마다 새로고침
+        # 서비스 설정
+        - name: SERVER_PORT
+          value: "8000"
+        - name: LOG_LEVEL
+          value: "INFO"
+

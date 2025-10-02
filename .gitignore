@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.egg-info/
+.venv/
+
+# CDK
+cdk.out/
+cdk.context.json
+
+# Env
+.env
+.env.local
+.env.production
+
+# Secrets (keep templates only)
+k8s/rds-secret.yaml
+k8s/aws-credentials-secret.yaml
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,103 @@
+name: Build and Deploy DSPM
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ap-northeast-2
+  EKS_CLUSTER_NAME: DspmEksCluster6F1D4525-94a78eb3271540cd8f8ef72a668cf7bf
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Install kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.29.0'
+
+    - name: Update kubeconfig for EKS
+      run: |
+        aws eks update-kubeconfig \
+          --region ${{ env.AWS_REGION }} \
+          --name ${{ env.EKS_CLUSTER_NAME }} \
+          --role-arn arn:aws:iam::651706765732:role/EksAdminRole
+
+    - name: Verify kubectl connection
+      run: |
+        kubectl get nodes
+        kubectl get pods -n dspm
+
+    - name: Generate secrets from templates
+      env:
+        AWS_ACCOUNT_ID: "651706765732"
+        EKS_CLUSTER_NAME: ${{ env.EKS_CLUSTER_NAME }}
+        RDS_USERNAME_B64: ${{ secrets.RDS_USERNAME_B64 }}
+        RDS_PASSWORD_B64: ${{ secrets.RDS_PASSWORD_B64 }}
+      run: |
+        # Install envsubst if not available
+        sudo apt-get update && sudo apt-get install -y gettext-base
+        
+        # Generate secrets from templates
+        envsubst < k8s/rds-secret.yaml.template > k8s/rds-secret.yaml
+        envsubst < k8s/access-entries/dspm-lee-access.yaml.template > k8s/access-entries/dspm-lee-access.yaml
+
+    - name: Apply Kubernetes manifests
+      run: |
+        # Apply namespace and basic resources
+        kubectl apply -f k8s/namespace.yaml
+        kubectl apply -f k8s/network-policy.yaml
+        
+        # Apply secrets
+        kubectl apply -f k8s/rds-secret.yaml
+        kubectl apply -f k8s/aws-credentials-secret.yaml
+        kubectl apply -f k8s/access-entries/dspm-lee-access.yaml
+        
+        # Apply services
+        kubectl apply -f k8s/dspm-backend/
+        kubectl apply -f k8s/analyzer/
+        kubectl apply -f k8s/collector/
+        kubectl apply -f k8s/dashboard/
+        kubectl apply -f k8s/lineage/
+
+    - name: Restart deployments to pick up new images
+      run: |
+        kubectl rollout restart deployment dspm-backend -n dspm
+        kubectl rollout restart deployment analyzer -n dspm
+        kubectl rollout restart deployment collector -n dspm
+        kubectl rollout restart deployment dashboard -n dspm
+        kubectl rollout restart deployment lineage -n dspm
+
+    - name: Wait for deployments to be ready
+      run: |
+        kubectl rollout status deployment/dspm-backend -n dspm --timeout=300s
+        kubectl rollout status deployment/analyzer -n dspm --timeout=300s
+        kubectl rollout status deployment/collector -n dspm --timeout=300s
+        kubectl rollout status deployment/dashboard -n dspm --timeout=300s
+        kubectl rollout status deployment/lineage -n dspm --timeout=300s
+
+    - name: Get service status
+      run: |
+        echo "=== Pods Status ==="
+        kubectl get pods -n dspm -o wide
+        
+        echo "=== Services Status ==="
+        kubectl get services -n dspm
+        
+        echo "=== Load Balancer URL ==="
+        kubectl get service dashboard -n dspm -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'

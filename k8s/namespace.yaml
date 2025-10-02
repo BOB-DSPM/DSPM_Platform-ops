@@ -1,0 +1,7 @@
+### dspm 네임스페이스 정의
+
+apiVersion: v1
+kind: Namespace
+
+metadata:
+  name: dspm

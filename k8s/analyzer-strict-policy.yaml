@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: analyzer-strict-access
+  namespace: dspm
+spec:
+  podSelector:
+    matchLabels:
+      app: analyzer
+  policyTypes:
+  - Ingress
+  ingress:
+  # Backend에서만 접근 허용
+  - from:
+    - podSelector:
+        matchLabels:
+          app: dspm-backend
+    ports:
+    - protocol: TCP
+      port: 8080
+  # DNS 해석 허용
+  - from: []
+    ports:
+    - protocol: UDP
+      port: 53

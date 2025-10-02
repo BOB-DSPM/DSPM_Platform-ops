@@ -1,0 +1,45 @@
+# EKS Access Entry Template for DSPM_Lee user
+# Generate actual file with: envsubst < dspm-lee-access.yaml.template > dspm-lee-access.yaml
+
+# Access Entry Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dspm-lee-access-config
+  namespace: kube-system
+data:
+  cluster-name: "${EKS_CLUSTER_NAME}"
+  principal-arn: "arn:aws:iam::${AWS_ACCOUNT_ID}:user/DSPM_Lee"
+  access-policies: |
+    - policyArn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy
+      accessScope:
+        type: cluster
+    - policyArn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSAdminPolicy
+      accessScope:
+        type: cluster
+
+---
+# ClusterRole for DSPM_Lee
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dspm-lee-cluster-admin
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
+
+---
+# ClusterRoleBinding for DSPM_Lee
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: dspm-lee-cluster-admin-binding
+subjects:
+- kind: User
+  name: DSPM_Lee
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: dspm-lee-cluster-admin
+  apiGroup: rbac.authorization.k8s.io

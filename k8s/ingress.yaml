@@ -1,0 +1,58 @@
+### Ingress (외부 진입점)
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: dspm-ingress 
+  namespace: dspm
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          # Dashboard (프론트엔드)
+          - path: /dashboard(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: dashboard
+                port:
+                  number: 80
+          # Analyzer API (백엔드)
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: analyzer
+                port:
+                  number: 8080
+          # Collector API
+          - path: /api/collector(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: collector
+                port:
+                  number: 8000
+          # Lineage 서비스
+          - path: /lineage(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: lineage
+                port:
+                  number: 8000
+          # 기본 경로는 dashboard로
+          - path: /(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: dashboard
+                port:
+                  number: 80
