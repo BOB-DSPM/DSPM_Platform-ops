@@ -19,6 +19,7 @@ cdk.context.json
 # Secrets (keep templates only)
 k8s/rds-secret.yaml
 k8s/aws-credentials-secret.yaml
+k8s/access-entries/dspm-lee-access.yaml
 
 # OS files
 .DS_Store
